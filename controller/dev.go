@@ -20,7 +20,6 @@ var _ reconcile.Reconciler = &ReconcilePods{}
 func (r *ReconcilePods) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	log := log.FromContext(ctx)
 
-	// Fetch the ReplicaSet from the cache
 	pod := &corev1.Pod{}
 	err := r.Client.Get(ctx, request.NamespacedName, pod)
 	if errors.IsNotFound(err) {
