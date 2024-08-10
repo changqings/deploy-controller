@@ -1,4 +1,4 @@
-## use controller-manager generate pod-controller
+## use controller-manager generate, for fast develop controller
 
 - reference: https://github.com/kubernetes-sigs/controller-runtime/blob/main/examples/builtins/
-- pod controller logical in `controller/dev.go`, //TODO;
+- deploy controller logical in `controller/dev.go`

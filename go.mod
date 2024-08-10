@@ -1,4 +1,4 @@
-module pod-controller
+module deploy-controller
 
 go 1.22.5
 

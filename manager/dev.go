@@ -1,11 +1,12 @@
 package local_mgr
 
 import (
-	local_ctrl "pod-controller/controller"
+	local_ctrl "deploy-controller/controller"
 
-	corev1 "k8s.io/api/core/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -31,7 +32,7 @@ func RunManager() error {
 		return err
 	}
 
-	c, err := controller.New("kube-controller", mgr, controller.Options{
+	c, err := controller.New("deploy-controller", mgr, controller.Options{
 		Reconciler:   &local_ctrl.ReconcilePods{Client: mgr.GetClient()},
 		RecoverPanic: func() *bool { t := true; return &t }(),
 	})
@@ -40,9 +41,17 @@ func RunManager() error {
 		return err
 	}
 
-	err = c.Watch(source.Kind(mgr.GetCache(), &corev1.Pod{}, &handler.TypedEnqueueRequestForObject[*corev1.Pod]{}, predicate.GenerationChangedPredicate{}))
+	err = c.Watch(source.Kind(mgr.GetCache(), &appsv1.Deployment{}, &handler.TypedEnqueueRequestForObject[*appsv1.Deployment]{},
+		predicate.TypedFuncs[*appsv1.Deployment]{
+			CreateFunc:  func(tce event.TypedCreateEvent[*appsv1.Deployment]) bool { return true }, // only watch create event
+			UpdateFunc:  func(tue event.TypedUpdateEvent[*appsv1.Deployment]) bool { return false },
+			DeleteFunc:  func(tde event.TypedDeleteEvent[*appsv1.Deployment]) bool { return false },
+			GenericFunc: func(tge event.TypedGenericEvent[*appsv1.Deployment]) bool { return false },
+		},
+		predicate.TypedGenerationChangedPredicate[*appsv1.Deployment]{},
+	))
 	if err != nil {
-		mgrLog.Error(err, "unable to watch pods")
+		mgrLog.Error(err, "unable to watch deploy")
 		return err
 	}
 

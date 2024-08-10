@@ -1,7 +1,7 @@
 package main
 
 import (
-	local_mgr "pod-controller/manager"
+	local_mgr "deploy-controller/manager"
 )
 
 func main() {
