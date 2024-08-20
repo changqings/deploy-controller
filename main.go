@@ -1,11 +1,9 @@
 package main
 
-import (
-	local_mgr "deploy-controller/manager"
-)
+import local_manager "deploy-controller/manager"
 
 func main() {
-	err := local_mgr.RunManager()
+	err := local_manager.RunManager()
 	if err != nil {
 		panic(err)
 	}

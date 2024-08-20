@@ -1,12 +1,10 @@
-package local_ctrl
+package local_controller
 
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -34,30 +32,17 @@ func (r *ReconcilePods) Reconcile(ctx context.Context, request reconcile.Request
 	}
 
 	// TODO: your logic;
-	// for example;
 
-	// for safe only run on annotation deploy,with local-controller="true"
-	if dp.Annotations["local-controller"] != "true" {
-		return reconcile.Result{}, nil
+	// For example;
+	if dp.Annotations == nil {
+		dp.Annotations = make(map[string]string)
 	}
 
-	// inject all container env RUN_ON__prod, use double downline as split char
-	nameValue, ok := dp.Annotations["env.inject.local"]
-	if !ok {
-		return reconcile.Result{}, nil
-	}
-	strs := strings.Split(nameValue, "__")
-
-	if len(strs) != 2 {
-		log.Error(nil, "env.inject.local format error", "name", nameValue)
-		return reconcile.Result{}, nil
+	if _, ok := dp.Annotations["kube-controller"]; !ok {
+		dp.Annotations["kube-controller"] = "test-by-controller"
 	}
 
-	name, value := strs[0], strs[1]
-
-	for i := range dp.Spec.Template.Spec.Containers {
-		dp.Spec.Template.Spec.Containers[i].Env = append(dp.Spec.Template.Spec.Containers[i].Env, corev1.EnvVar{Name: name, Value: value})
-	}
+	// force update
 	dp.ResourceVersion = "0"
 
 	err = r.Client.Update(ctx, dp)
