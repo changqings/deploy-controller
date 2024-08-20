@@ -2,3 +2,7 @@
 
 - reference: https://github.com/kubernetes-sigs/controller-runtime/blob/main/examples/builtins/
 - deploy controller logical in `controller/dev.go`
+
+
+## deploy
+- make deploy-k8s
